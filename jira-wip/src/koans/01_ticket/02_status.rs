@@ -26,7 +26,9 @@ mod status {
     /// Let's create a variant for each of the allowed statuses of our tickets.
     pub enum Status {
         ToDo,
-        __
+        InProgress,
+        Done,
+        Blocked
     }
 
 
@@ -40,7 +42,7 @@ mod status {
             let ticket = Ticket {
                 title: "A ticket title".into(),
                 description: "A heart-breaking description".into(),
-                status: __
+                status: Status::Blocked
             };
 
             // Let's check that the status corresponds to what we expect.

@@ -57,7 +57,8 @@ mod traits {
             // If you need to refresh the `match` syntax, checkout
             // https://doc.rust-lang.org/book/ch06-02-match.html
             match (self, other) {
-                __
+                (Status::Blocked, Status::Blocked) | (Status::Done, Status::Done) | (Status::InProgress, Status::InProgress) | (Status::ToDo, Status::ToDo) => true,
+                _ => false
             }
         }
     }
