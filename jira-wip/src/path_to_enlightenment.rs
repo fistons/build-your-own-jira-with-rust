@@ -13,3 +13,6 @@ include!("koans/02_ticket_store/02_option.rs");
 include!("koans/02_ticket_store/03_id_generation.rs");
 include!("koans/02_ticket_store/04_metadata.rs");
 include!("koans/02_ticket_store/05_type_as_constraints.rs");
+include!("koans/02_ticket_store/06_result.rs");
+include!("koans/02_ticket_store/07_vec.rs");
+include!("koans/02_ticket_store/08_delete_and_update.rs");
