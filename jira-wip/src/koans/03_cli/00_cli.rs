@@ -24,7 +24,7 @@
 /// When you are ready, uncomment the appropriate lines from src/main.rs and
 /// run `cargo run --bin jira-wip` in your terminal!
 pub mod cli {
-    use super::store_recap::{TicketStore, Status, TicketDraft, TicketPatch, TicketTitle, TicketDescription};
+    use super::store_recap::{TicketStore, Status, TicketDraft, TicketPatch, TicketTitle, TicketDescription, ValidationError};
     use super::id_generation::TicketId;
     use std::error::Error;
     use std::str::FromStr;
@@ -35,7 +35,12 @@ pub mod cli {
     pub enum Command {
         /// Create a ticket on your board.
         Create {
-            __
+            /// Title of the new ticket
+            #[structopt(long)]
+            title: TicketTitle,
+            /// Description of the new ticket
+            #[structopt(long)]
+            description: TicketDescription,
         },
         /// Edit the details of an existing ticket.
         Edit {
@@ -54,7 +59,9 @@ pub mod cli {
         },
         /// Delete a ticket from the store passing the ticket id.
         Delete {
-            __
+            /// Id of the ticket you want to delete.
+            #[structopt(long)]
+            ticket_id: TicketId,
         },
         /// List all existing tickets.
         List,
@@ -69,23 +76,37 @@ pub mod cli {
         type Err = ParsingError;
 
         fn from_str(s: &str) -> Result<Self, Self::Err> {
-            __
+            let s = s.to_lowercase();
+            return match s.as_str() {
+                "todo" | "to-do" => Ok(Status::ToDo),
+                "inprogress" | "in-progress" => Ok(Status::InProgress),
+                "blocked" => Ok(Status::Blocked),
+                "done" => Ok(Status::Done),
+                _ => Err(ParsingError(String::from("Nope")))
+            };
         }
     }
 
     impl FromStr for TicketTitle {
-        __
+        type Err = ValidationError;
+
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
+            TicketTitle::new(s.to_string())
+        }
     }
 
     impl FromStr for TicketDescription {
-        __
+        type Err = ValidationError;
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
+            TicketDescription::new(s.to_string())
+        }
     }
 
     /// Our error struct for parsing failures.
     #[derive(Debug)]
     pub struct ParsingError(String);
 
-    impl Error for ParsingError { }
+    impl Error for ParsingError {}
 
     impl std::fmt::Display for ParsingError {
         fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
@@ -105,7 +126,7 @@ pub mod cli {
     pub fn handle_command(ticket_store: &mut TicketStore, command: Command) -> Result<(), Box<dyn Error>> {
         match command {
             Command::Create { description, title } => {
-                todo!()
+                println!("Following ticket created:\n{:?}", ticket_store.save(TicketDraft { title, description }));
             }
             Command::Edit {
                 id,
@@ -113,7 +134,10 @@ pub mod cli {
                 description,
                 status,
             } => {
-                todo!()
+                match ticket_store.update(&id, TicketPatch { title, description, status }) {
+                    Some(t) => println!("The following ticket has been updated:\n{:?}", t),
+                    None => println!("There was no ticket associated to the ticket id {:?}", id)
+                }
             }
             Command::Delete { ticket_id } => match ticket_store.delete(&ticket_id) {
                 Some(deleted_ticket) => println!(
@@ -126,7 +150,7 @@ pub mod cli {
                 ),
             },
             Command::List => {
-                todo!()
+                println!("Listed ticket:\n {:?}", ticket_store.list());
             }
         }
         Ok(())
